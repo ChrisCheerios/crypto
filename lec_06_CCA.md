@@ -22,7 +22,7 @@ such that $G(U_n)\approx U_{n+1}$ (where $U_m$ denotes the uniform distribution 
 
 * We showed that the PRG conjecture implies a pseudorandom generator of any polynomial output length which in particular via the stream cipher construction implies a computationally secure encryption with plaintext  arbitrarily larger than the key. (The only restriction is that the plaintext is of polynomial size which is needed anyway  if we want to actually be able to read and write it.)
 
-* We then showed that the PRG conjecture actually implies a stronger object known as a _pseudorandom function (PRF) function collection_: this is a collection $\{ f_s \}$ of functions such that if we choose $s$ at random and fix it, and give an adversary a black box computing $i \mapsto f_s(i)$ then she can't tell the difference between this and a blackbox computing a random function.
+* We then showed that the PRG conjecture actually implies a stronger object known as a _pseudorandom function (PRF) collection_: this is a collection $\{ f_s \}$ of functions such that if we choose $s$ at random and fix it, and give an adversary a black box computing $i \mapsto f_s(i)$ then she can't tell the difference between this and a blackbox computing a random function.
 
 * Pseudorandom functions turn out to be useful for _identification protocols_, _message authentication codes_ and this strong notion of security of encryption known as _chosen plaintext attack (CPA) security_ where we are allowed to encrypt _many messages of Eve's choice_ and still require that the next message hides all information except for what Eve already knew before.
 
@@ -85,11 +85,11 @@ The point is that often our adversaries can be _active_ and modify the communica
 > # {.definition title="CCA security" #CCAdef}
 An encryption scheme $(E,D)$ is _chosen ciphertext attack (CCA) secure_ if every
 efficient adversary  _Mallory_ wins in the following game with probability at most $1/2+ negl(n)$: \
-* Mallory gets $1^n$ where $n$ is the length of the key \
-* For $poly(n)$ rounds, Mallory gets access to the functions $m \mapsto E_k(m)$ and $c \mapsto D_k(c)$. \
-* Mallory chooses a pair of messages $\{ m_0,m_1 \}$, a secret $b$ is chosen at random in $\{0,1\}$, and Mallory gets $c^* = E_k(m_b)$. \
-* Mallory now gets another $poly(n)$ rounds of access to the functions $m \mapsto E_k(m)$ and $c \mapsto D_k(c)$ except that she is not allowed to query $c^*$ to her second oracle. \
-* Mallory outputs $b'$ and _wins_ if $b'=b$.
+1. Mallory gets $1^n$ where $n$ is the length of the key \
+2. For $poly(n)$ rounds, Mallory gets access to the functions $m \mapsto E_k(m)$ and $c \mapsto D_k(c)$. \
+3. Mallory chooses a pair of messages $\{ m_0,m_1 \}$, a secret $b$ is chosen at random in $\{0,1\}$, and Mallory gets $c^* = E_k(m_b)$. \
+4. Mallory now gets another $poly(n)$ rounds of access to the functions $m \mapsto E_k(m)$ and $c \mapsto D_k(c)$ except that she is not allowed to query $c^*$ to her second oracle. \
+5. Mallory outputs $b'$ and _wins_ if $b'=b$.
 
 
 ![The CCA security game.](../figure/cca-game.jpg){#CCAgamefig  .margin }
@@ -103,7 +103,7 @@ There are two natural objections to it:
 * __This definition seems to be too strong:__ There is no way we would let Mallory play with a _decryption box_ - that basically amounts to letting her break the encryption scheme. Sure, she could have some impact on the ciphertexts that Bob decrypts and observe some resulting side effects, but there is a long way from that to giving her oracle access to the decryption algorithm.
 
 The response to this is that it is very hard to model what is the "realistic" information Mallory might get about the ciphertexts she might cause Bob to decrypt. The goal of a security definition is not to capture exactly the attack scenarios that occur in real life but rather to be _sufficiently conservative_ so that these real life attacks could be modeled in our game. Therefore, having a too strong definition is not a bad thing (as long as it can be achieved!).
-The WEP example shows that the definition does capture a practical issue in security and similar attacks on practical protocols have been shown time and again (see for example the discussion of "padding attacks" in Section 3.7.2 of the Katz Lindell book.)
+The WEP example shows that the definition does capture a practical issue in security and similar attacks on practical protocols have been shown time and again (see the discussion of "padding attacks" in Section 3.7.2 of the Katz Lindell book.)
 
 * __This definition seems to be too weak:__ What justification do we have for not allowing Mallory to make the query $c^*$ to the decryption box? After all she is an adversary so she could do whatever she wants. The answer is that the definition would be clearly impossible to achieve if Mallory could simply get the decryption of $c^*$ and learn whether it was an encryption of $m_0$ or $m_1$. So this restriction is the absolutely minimal one we could make without causing the notion to be obviously impossible. Perhaps surprisingly, it turns out that once we make this minimal restriction, we can in fact construct CCA-secure encryptions.
 
@@ -132,7 +132,7 @@ The definition of CCA seems extremely strong, so perhaps it is not surprising th
 The WEP attack shows that the CPA secure encryption we saw before (i.e., $E_k(m)=(r,f_k(r)\oplus m)$) is _not_ CCA secure.
 We will see other examples of _non_ CCA secure encryptions in the exercises.
 So, how _do_ we construct such a scheme?
-The WEP attack actually already hints of the crux of CCA security. We want to ensure that Mallory is not able to modify the challenge ciphertext $c^*$
+The WEP attack actually already hints at the crux of CCA security. We want to ensure that Mallory is not able to modify the challenge ciphertext $c^*$
 to some related $c'$.
 Another way to say it is that we need to ensure the _integrity_ of messages to achieve their _confidentiality_ if we want to handle _active_ adversaries that might modify messages on the channel.
 Since in in a great many practical scenarios, an adversary might be able to do so, this is an important message that deserves to be repeated:
@@ -140,12 +140,11 @@ Since in in a great many practical scenarios, an adversary might be able to do s
 >_To ensure confidentiality, you need integrity._
 
 This is a lesson that has been time and again been shown and many protocols have been broken due to the mistaken belief that if we only care about _secrecy_, it is enough to use only
-_encryption_ (and one that is only CPA secure) and there is no need for _authentication_.  [Matthew Green](http://blog.cryptographyengineering.com/2012/05/how-to-choose-authenticated-encryption.html) writes this more provocatively as
+_encryption_ (and one that is only CPA secure) and there is no need for _authentication_.  [Matthew Green](http://blog.cryptographyengineering.com/2012/05/how-to-choose-authenticated-encryption.html) writes this more provocatively as:
 
 >_Nearly all of the symmetric encryption modes you learned about in school, textbooks, and Wikipedia are (potentially) insecure.[^OFB]_
 
-exactly because these basic modes only ensure security for _passive_ eavesdropping adversaries and do not ensure chosen ciphertext security
-which is the "gold standard" for online applications. (For symmetric encryption people often use the name "authenticated encryption" in practice rather than CCA security; those are not identical but are extremely related notions.)
+Green's point is that these basic modes only ensure security for _passive_ eavesdropping adversaries and do not ensure chosen ciphertext security which is the "gold standard" for online applications. (For symmetric encryption people often use the name "authenticated encryption" in practice rather than CCA security; those are not identical but are extremely related notions.)
 
 
 [^OFB]: I also like the part where Green says about a block cipher mode that "if OCB was your kid, he'd play three sports and be on his way to Harvard." We will have an exercise about a simplified version of the GCM mode (which perhaps only plays a single sport and is on its way to ...). You can read about OCB in Exercise 9.14 in the Boneh-Shoup book; it uses the notion of a "tweakable block cipher" which simply means that given a single key $k$, you actually get a set $\{ p_{k,1},\ldots,p_{k,t} \}$ of permutations that are indistinguishable from $t$ independent random permutation (the set $\{1,\ldots, t\}$ is called the set of "tweaks" and we sometimes index it using strings instead of numbers).
@@ -192,7 +191,7 @@ Indeed, because we are in Case I, with probability $\epsilon/10$, in this game _
 Since $i_0$ is random, with probability $\epsilon/(10T)$ this query will be at the $i_0^{th}$ round.
 Let us assume that this above event $GOOD$ happened in which the $i_0$-th query to the decryption box is a pair $(c,\sigma)$ that both passes verification and the pair $(c,\sigma)$ was not returned before by the encryption oracle.
 Since we pass (canonical) verification, we know that  $\sigma=S_{k_2}(c)$, and because all encryption queries return pairs of the form $(c',S_{k_2}(\sigma'))$, this means that no such query returned $c$ as its first element either.
-In other words, when the event $GOOD$ happens the $i_0$-the query contains a pair $(c,\sigma)$ such  that $c$ was not queried before to the signature box, but $(c,\sigma)$ passes verification. This is the definition of breaking $(S,V)$ in a chosen message attack, and hence we obtain a contradiction to the CMA security of $(S,V)$.
+In other words, when the event $GOOD$ happens the $i_0$-th query contains a pair $(c,\sigma)$ such  that $c$ was not queried before to the signature box, but $(c,\sigma)$ passes verification. This is the definition of breaking $(S,V)$ in a chosen message attack, and hence we obtain a contradiction to the CMA security of $(S,V)$.
 >
 Now for Case II: In this case, we will build an adversary $Eve$ for CPA-game in the original scheme $(E,D)$.  As you might expect, the adversary $Eve$ will choose by herself the key $k_2$ for the MAC scheme, and attempt to play the CCA security game with $M'$.  When $M'$ makes _encryption queries_ this should not be a problem-
 $Eve$ can forward the plaintext $m$ to its encryption oracle to get  $c=E_{k_1}(m)$ and then compute $\sigma = S_{k_2}(c)$ since she knows the signing key $k_2$.
